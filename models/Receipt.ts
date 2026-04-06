@@ -37,10 +37,10 @@ export interface IReceipt extends Document {
 
 const receiptItemSchema = new Schema<IReceiptItem>(
   {
-    description: { type: String, required: true },
-    quantity: { type: Number, required: true, min: 0 },
-    unitPrice: { type: Number, required: true, min: 0 },
-    total: { type: Number, required: true, min: 0 },
+    description: { type: String, required: false },
+    quantity: { type: Number, required: false, min: 0 },
+    unitPrice: { type: Number, required: false, min: 0 },
+    total: { type: Number, required: false, min: 0 },
   },
   { _id: false }
 );
@@ -52,17 +52,17 @@ const receiptSchema = new Schema<IReceipt>(
     receiptNo: { type: String, required: true, trim: true },
     receiptDate: { type: Date, required: true },
     invoiceRef: { type: String, trim: true }, // optional link to invoice
-    billTo: { type: String, required: true, trim: true },
+    billTo: { type: String, required: false, trim: true },
     billToAddress: { type: String, required: false },
     items: { type: [receiptItemSchema], default: [] },
-    itemsCount: { type: Number, required: true, min: 0 },
-    subtotal: { type: Number, required: true, min: 0 },
+    itemsCount: { type: Number, required: false, min: 0 },
+    subtotal: { type: Number, required: false, min: 0 },
     shipping: { type: Number, default: 0, min: 0 },
     tax: { type: Number, default: 0, min: 0 },
     grandTotal: { type: Number, required: true, min: 0 },
     currency: { type: String, required: true, default: "USD", uppercase: true },
-    paymentMethod: { type: String, required: true, trim: true },
-    paidAmount: { type: Number, required: true, min: 0 },
+    paymentMethod: { type: String, required: false, trim: true },
+    paidAmount: { type: Number, required: false, min: 0 },
     bank: { type: String, trim: true },
     accountNo: { type: String, trim: true },
     accountName: { type: String, trim: true },
