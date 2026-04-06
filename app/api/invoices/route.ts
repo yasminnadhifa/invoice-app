@@ -20,7 +20,15 @@ export async function GET(request: NextRequest) {
     const filter: Record<string, any> = {};
 
     const status = searchParams.get("status");
-    if (status) filter.status = status;
+    if (status === "overdue") {
+      filter.dueDate = { $lt: new Date() };
+
+      // optional: exclude paid invoices
+      filter.status = { $ne: "paid" };
+    } else if (status) {
+      filter.status = status;
+    }
+
 
     const search = searchParams.get("search");
     if (search) {
