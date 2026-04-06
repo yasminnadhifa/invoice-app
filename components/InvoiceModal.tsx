@@ -26,7 +26,7 @@ export function InvoiceDetailModal({ invoiceId, onClose }: {
       className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-xl border border-slate-200 w-[520px] max-h-[85vh] overflow-y-auto shadow-lg">
+      <div className="bg-white rounded-xl border border-slate-200 w-[520px] max-h-[85vh] overflow-y-auto shadow-lg scroll-bar">
         {loading ? (
           <div className="flex items-center justify-center h-48 text-slate-400 text-sm">Loading…</div>
         ) : !inv ? (
