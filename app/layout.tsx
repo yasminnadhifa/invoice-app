@@ -15,8 +15,8 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invoicio — Invoice Management",
-  description: "Clean invoice tracking and management",
+  title: "NIP — Invoice Management",
+  description: "Clean invoice and receipt tracking and management",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

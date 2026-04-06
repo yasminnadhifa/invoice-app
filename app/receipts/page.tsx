@@ -96,7 +96,7 @@ export default function ReceiptsPage() {
           <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
             ◈
           </div>
-          <span className="font-bold text-sm tracking-tight text-slate-800">Invoicio</span>
+          <span className="font-bold text-sm tracking-tight text-slate-800">NIP</span>
         </div>
 
         <nav className="flex-1 p-3 flex flex-col gap-1">

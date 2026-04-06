@@ -56,7 +56,7 @@ export default function LoginPage() {
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
               ◈
             </div>
-            <span className="font-bold text-[15px] tracking-tight text-slate-800">Invoicio</span>
+            <span className="font-bold text-[15px] tracking-tight text-slate-800">NIP</span>
           </div>
 
           <h1 className="text-xl font-bold tracking-tight text-slate-800 mb-1">
@@ -139,7 +139,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-5">
-          Invoicio · Invoice Management System
+          NIP · Invoice & Receipt Management System
         </p>
       </div>
     </div>
