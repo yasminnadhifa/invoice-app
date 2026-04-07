@@ -97,9 +97,9 @@ export function InvoiceDetailModal({ invoiceId, onClose }: {
                       <tr key={i} className="border-b border-slate-50">
                         <td className="py-1.5 px-2 text-slate-700">{item.description}</td>
                         <td className="py-1.5 px-2 text-slate-500">{item.quantity}</td>
-                        <td className="py-1.5 px-2 text-slate-500">{item.total}</td>
+                        <td className="py-1.5 px-2 text-slate-500">{formatCurrency(item.unitPrice, inv.currency)}</td>
                         <td className="py-1.5 px-2 text-right font-mono text-slate-600">
-                          {formatCurrency(item.unitPrice, inv.currency)}
+                          {formatCurrency(item.total, inv.currency)}
                         </td>
                       </tr>
                     ))}
