@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { ReceiptListItem } from "@/types";
 import { Badge } from "@/components/Badge";
 
-function formatCurrency(amount: number, currency: string) {
+function formatCurrency(amount: number | null, currency: string = "IDR") {
+  if (amount === null || amount === undefined) return `${currency} 0`;
   try {
     return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
   } catch {
     return `${currency} ${amount.toFixed(2)}`;
   }
 }
-
 function formatDate(iso: string) {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-US", {
