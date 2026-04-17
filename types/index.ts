@@ -52,7 +52,7 @@ export interface InvoiceListItem {
   billTo: string;
   billToAddress: string;
 
-  items: InvoiceItem[]; // ✅ missing before
+  items: InvoiceItem[]; 
   itemsCount: number;
 
   subtotal: number;
@@ -114,7 +114,13 @@ export interface CreateReceiptRequest {
   source?: "manual" | "bot";
 }
 
-export interface ReceiptListItem {
+export interface InvoiceMismatch {
+  index: number;
+  field: "description" | "quantity" | "unitPrice" | "total";
+  invoiceValue: string | number;
+  receiptValue: string | number;
+  reason: string;
+}export interface ReceiptListItem {
   _id: string;
   dateReceived: string;
   vendor: string;
@@ -135,6 +141,9 @@ export interface ReceiptListItem {
   accountNo?: string;
   accountName?: string;
   source: string;
+  status?: "MATCH" | "FLAGGED";
+  reason?: string;
+  mismatches?: InvoiceMismatch[];
   validation: string;
   createdAt: string;
 }

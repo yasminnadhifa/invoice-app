@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ReceiptListItem } from "@/types";
 import { Badge } from "@/components/Badge";
+import { ReceiptDetailModal } from "@/components/ReceiptModal";
 
 function formatCurrency(amount: number | null, currency: string = "IDR") {
   if (amount === null || amount === undefined) return `${currency} 0`;
@@ -22,9 +23,10 @@ function formatDate(iso: string) {
 
 const COLUMNS = [
   "Date Received", "Vendor", "Receipt No", "Receipt Date", "Invoice Ref",
-  "Bill To", "Items", "Subtotal", "Shipping", "Tax", "Grand Total",
-  "Currency", "Payment Method", "Paid Amount", "Bank", "Account No",
-  "Account Name", "Source",
+  "Grand Total",
+  "Status",        // ✅ MATCH / FLAGGED
+  "Validation",    // valid / invalid
+  "Source",
 ];
 
 export default function ReceiptsPage() {
@@ -38,6 +40,7 @@ export default function ReceiptsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [userName, setUserName] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const fetchReceipts = useCallback(async () => {
     setLoading(true);
@@ -212,6 +215,7 @@ export default function ReceiptsPage() {
                 {receipts.map((rec, i) => (
                   <tr
                     key={rec._id}
+                    onClick={() => setSelectedId(rec._id)}  
                     className="border-b border-slate-100 hover:bg-indigo-50/40 transition-colors animate-fade-in"
                     style={{ animationDelay: `${i * 18}ms` }}
                   >
@@ -230,41 +234,15 @@ export default function ReceiptsPage() {
                     <td className="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
                       {rec.invoiceRef || "—"}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap max-w-[140px] truncate text-xs">
-                      {rec.billTo}
+                     <td className="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
+                      {rec.grandTotal || "—"}
                     </td>
-                    <td className="px-4 py-3 text-center text-slate-500 text-xs font-medium">
-                      {rec.itemsCount}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge value={rec.status} />   {/* MATCH / FLAGGED */}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-600 whitespace-nowrap">
-                      {formatCurrency(rec.subtotal, rec.currency)}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
-                      {formatCurrency(rec.shipping, rec.currency)}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
-                      {formatCurrency(rec.tax, rec.currency)}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs font-bold text-slate-800 whitespace-nowrap">
-                      {formatCurrency(rec.grandTotal, rec.currency)}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-400">
-                      {rec.currency}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap text-xs font-medium">
-                      {rec.paymentMethod}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs font-bold text-emerald-600 whitespace-nowrap">
-                      {formatCurrency(rec.paidAmount, rec.currency)}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs max-w-[120px] truncate">
-                      {rec.bank || "—"}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
-                      {rec.accountNo || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap max-w-[120px] truncate text-xs">
-                      {rec.accountName || "—"}
+
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge value={rec.validation} />
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Badge value={rec.source} />
@@ -301,6 +279,14 @@ export default function ReceiptsPage() {
           </div>
         )}
       </div>
+      {selectedId && (
+        <ReceiptDetailModal
+          receiptId={selectedId}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
     </div>
+    
   );
 }
+

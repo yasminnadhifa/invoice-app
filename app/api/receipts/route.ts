@@ -52,11 +52,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const required = [
-      "dateReceived", "vendor", "receiptNo", "receiptDate",
-      "billTo", "currency", "paymentMethod", "paidAmount", "validation", "validationNotes"
+      "dateReceived",
+      "vendor",
+      "receiptNo",
+      "receiptDate",
+      "billTo",
+      "currency",
+      "paymentMethod",
+      "paidAmount",
+      "validation",
+      "validationNotes",
+      "status",
+      "reason",
     ] as const;
 
     const missing = required.filter((f) => !body[f] && body[f] !== 0);
+
     if (missing.length > 0) {
       return NextResponse.json(
         {
@@ -65,28 +76,33 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
-    } 
+    }
+
+    await connectDB();
+
+    // 1. Find invoice (if exists)
+    let linkedInvoice = null;
 
     if (body.invoiceRef) {
-      const linkedInvoice = await Invoice.findOne({ invoiceNo: body.invoiceRef });
+      linkedInvoice = await Invoice.findOne({
+        invoiceNo: body.invoiceRef,
+      });
+
       if (!linkedInvoice) {
         return NextResponse.json(
           { message: `Invoice ${body.invoiceRef} not found` },
           { status: 400 }
         );
       }
+
+      // 2. SAFE validation (no early crash, just flag)
       if (body.paidAmount !== linkedInvoice.grandTotal) {
-        return NextResponse.json(
-          { 
-            message: `Amount mismatch: receipt paid ${body.paidAmount} but invoice total is ${linkedInvoice.grandTotal}`,
-            expected: linkedInvoice.grandTotal,
-            received: body.paidAmount
-          },
-          { status: 400 }
-        );
+        body.validation = "invalid";
+        body.validationNotes = `Amount mismatch: receipt ${body.paidAmount} vs invoice ${linkedInvoice.grandTotal}`;
       }
     }
 
+    // 3. SAVE RECEIPT FIRST (IMPORTANT)
     const receipt = await Receipt.create({
       ...body,
       dateReceived: new Date(body.dateReceived),
@@ -94,12 +110,19 @@ export async function POST(request: NextRequest) {
       createdBy: auth.payload.userId,
     });
 
-    // If invoiceRef provided, update invoice status to paid
-    if (body.invoiceRef) {
-      await Invoice.findOneAndUpdate(
-        { invoiceNo: body.invoiceRef },
-        { status: "paid", paidDate: new Date(body.receiptDate) }
-      );
+    // 4. Update invoice ONLY if valid + matched
+    if (linkedInvoice && body.validation === "valid") {
+      const alreadyPaid = linkedInvoice.status === "paid";
+
+      if (!alreadyPaid) {
+        await Invoice.findOneAndUpdate(
+          { invoiceNo: body.invoiceRef },
+          {
+            status: "paid",
+            paidDate: new Date(body.receiptDate),
+          }
+        );
+      }
     }
 
     return NextResponse.json(receipt.toObject(), { status: 201 });
@@ -110,7 +133,12 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
+
     console.error("POST /api/receipts error:", err);
-    return NextResponse.json({ message: "Internal server error", errors: String(err) }, { status: 500 });
+
+    return NextResponse.json(
+      { message: "Internal server error", errors: String(err) },
+      { status: 500 }
+    );
   }
 }
