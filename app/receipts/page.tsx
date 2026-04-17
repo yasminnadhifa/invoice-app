@@ -238,7 +238,7 @@ export default function ReceiptsPage() {
                       {rec.grandTotal || "—"}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Badge value={rec.status} />   {/* MATCH / FLAGGED */}
+                      <Badge value={rec.status || '-'} />   {/* MATCH / FLAGGED */}
                     </td>
 
                     <td className="px-4 py-3 whitespace-nowrap">
