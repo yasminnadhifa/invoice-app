@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import { connectDB } from "@/lib/mongodb";
 import Attachment from "@/models/Attachment";
 import { authenticate } from "@/lib/auth";
+import mongoose from "mongoose";
 
 export async function POST(request: NextRequest) {
   const auth = authenticate(request);
@@ -21,20 +21,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Missing fields" }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    if (!mongoose.Types.ObjectId.isValid(entityId)) {
+      return NextResponse.json({ message: "Invalid entityId" }, { status: 400 });
+    }
 
-    const uploadDir = path.join(process.cwd(), "uploads-private");
-    await mkdir(uploadDir, { recursive: true });
-
-    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
-    const filePath = path.join(uploadDir, fileName);
-
-    await writeFile(filePath, buffer);
+    const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+    const { url } = await put(`attachments/${filename}`, file, { access: "public" });
 
     const attachment = await Attachment.create({
-      filename: fileName,
+      filename,
       originalName: file.name,
+      fileUrl: url,
       entityType,
       entityId,
       uploadedBy: auth.payload.userId,
