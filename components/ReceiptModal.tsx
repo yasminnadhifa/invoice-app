@@ -257,7 +257,7 @@ export function ReceiptDetailModal({
                                 />
                               </a>
                             ) : (
-                              
+                              <a>
                                 href={att.fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
