@@ -133,7 +133,7 @@ export function InvoiceDetailModal({ invoiceId, onClose }: {
                   <section>
                     <Label>Attachments ({inv.attachments.length})</Label>
                     <div className="flex flex-col gap-2">
-                      {inv.attachments.map((att) => {
+                      {inv.attachments.map((att: { _id: string; filename: string; fileUrl: string; originalName: string }) => {
                         const isImage = /\.(jpg|jpeg|png|webp)$/i.test(att.filename);
                         return (
                           <div key={att._id} className="border border-slate-100 rounded-lg overflow-hidden">
