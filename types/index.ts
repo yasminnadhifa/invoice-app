@@ -77,6 +77,12 @@ export interface InvoiceListItem {
   createdBy: string; 
   createdAt: string;
   updatedAt: string; 
+  attachments?: {
+  _id: string;
+  originalName: string;
+  fileUrl: string;
+  filename: string;
+}[];
 }
 
 export interface InvoiceListResponse {
@@ -146,4 +152,10 @@ export interface InvoiceMismatch {
   mismatches?: InvoiceMismatch[];
   validation: string;
   createdAt: string;
+  attachments?: {
+  _id: string;
+  originalName: string;
+  fileUrl: string;
+  filename: string;
+}[];
 }

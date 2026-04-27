@@ -238,7 +238,42 @@ export function ReceiptDetailModal({
                   />
                 </Grid>
               </section>
-
+              {data.attachments && data.attachments.length > 0 && (
+                <>
+                  <hr className="border-slate-100" />
+                  <section>
+                    <Label>Attachments ({data.attachments.length})</Label>
+                    <div className="flex flex-col gap-2">
+                      {data.attachments.map((att) => {
+                        const isImage = /\.(jpg|jpeg|png|webp)$/i.test(att.filename);
+                        return (
+                          <div key={att._id} className="border border-slate-100 rounded-lg overflow-hidden">
+                            {isImage ? (
+                              <a href={att.fileUrl} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={att.fileUrl}
+                                  alt={att.originalName}
+                                  className="w-full object-cover max-h-48"
+                                />
+                              </a>
+                            ) : (
+                              
+                                href={att.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2.5 text-xs text-slate-600 hover:bg-slate-50"
+                              >
+                                <span>📄</span>
+                                <span className="truncate">{att.originalName}</span>
+                              </a>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                </>
+              )}
               {/* Mismatch Summary */}
               {mismatches.length > 0 && (
                 <>
