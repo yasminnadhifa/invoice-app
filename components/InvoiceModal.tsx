@@ -146,7 +146,7 @@ export function InvoiceDetailModal({ invoiceId, onClose }: {
                                 />
                               </a>
                             ) : (
-                              <a>
+                              <a
                                 href={att.fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
