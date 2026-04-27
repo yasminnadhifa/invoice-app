@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { authenticate } from "@/lib/auth";
 import Invoice from "@/models/Invoice";
+import Attachment from "@/models/Attachment";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -17,7 +18,10 @@ export async function GET(request: NextRequest, { params }: Params) {
     if (!invoice) {
       return NextResponse.json({ message: "Invoice not found" }, { status: 404 });
     }
-    return NextResponse.json(invoice);
+    const attachments = await Attachment.find({ entityId: id, entityType: "invoice" })
+      .select("-__v -entityType -entityId")
+      .lean();
+    return NextResponse.json({...invoice, attachments});
   } catch {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
