@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     });
 
     // 4. Update invoice ONLY if valid + matched
-    if (linkedInvoice && body.validation === "valid") {
+    if (linkedInvoice) {
       const alreadyPaid = linkedInvoice.status === "paid";
 
       if (!alreadyPaid) {
