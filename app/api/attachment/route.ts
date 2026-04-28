@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File;
     const entityType = formData.get("entityType") as string;
     const entityId = formData.get("entityId") as string;
-
+    const fileType = (formData.get("fileType") as string) ?? "original";
     if (!file || !entityType || !entityId) {
       return NextResponse.json({ message: "Missing fields" }, { status: 400 });
     }
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       fileUrl: url,
       entityType,
       entityId,
+      fileType,
       uploadedBy: auth.payload.userId,
     });
 

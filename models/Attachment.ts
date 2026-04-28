@@ -5,6 +5,7 @@ export interface IAttachment extends Document {
   originalName: string;
   fileUrl: string;
   entityType: "receipt" | "invoice";
+  fileType: "original" | "converted";
   entityId: mongoose.Types.ObjectId;
   uploadedBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -17,6 +18,7 @@ const attachmentSchema = new Schema<IAttachment>(
     fileUrl: { type: String, required: true },
     entityType: { type: String, enum: ["receipt", "invoice"], required: true },
     entityId: { type: Schema.Types.ObjectId, required: true, index: true },
+    fileType: { type: String, enum: ["original", "converted"], required: true },
     uploadedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
