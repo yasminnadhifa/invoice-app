@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { authenticate } from "@/lib/auth";
 import Invoice from "@/models/Invoice";
 import Attachment from "@/models/Attachment";
+import Receipt from "@/models/Receipt";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -18,10 +19,16 @@ export async function GET(request: NextRequest, { params }: Params) {
     if (!invoice) {
       return NextResponse.json({ message: "Invoice not found" }, { status: 404 });
     }
-    const attachments = await Attachment.find({ entityId: id, entityType: "invoice" })
-      .select("-__v -entityType -entityId")
-      .lean();
-    return NextResponse.json({...invoice, attachments});
+    const [attachments, receipts] = await Promise.all([
+      Attachment.find({ entityId: id, entityType: "invoice" })
+        .select("-__v -entityType -entityId")
+        .lean(),
+      Receipt.find({ invoiceRef: invoice.invoiceNo })
+        .select("_id receiptNo vendor receiptDate status validation grandTotal currency")
+        .lean(),
+    ]);
+
+    return NextResponse.json({ ...invoice, attachments, receipts });
   } catch {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }

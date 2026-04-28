@@ -92,6 +92,15 @@ export default function InvoiceDetailPage() {
               {inv.vendor} · {formatDate(inv.invoiceDate)}
             </p>
           </div>
+          {inv.status === "paid" && (inv as any).receipts?.length > 0 && (
+            <button
+            onClick={() => router.push(`/receipts/${(inv as any).receipts[0]._id}`)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 text-sm font-medium hover:bg-indigo-100 transition-colors border-none cursor-pointer"
+            >
+            <span>🧾</span>
+            View Receipt
+            </button>
+        )}
         </div>
 
         {/* Content */}
@@ -198,6 +207,8 @@ export default function InvoiceDetailPage() {
                 </div>
               </div>
             </div>
+
+
 
             {/* Attachments */}
             {attachments.length > 0 && (
