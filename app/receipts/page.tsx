@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ReceiptListItem } from "@/types";
 import { Badge } from "@/components/Badge";
-import { ReceiptDetailModal } from "@/components/ReceiptModal";
 
 function formatCurrency(amount: number | null, currency: string = "IDR") {
   if (amount === null || amount === undefined) return `${currency} 0`;
@@ -213,12 +212,11 @@ export default function ReceiptsPage() {
               </thead>
               <tbody>
                 {receipts.map((rec, i) => (
-                  <tr
-                    key={rec._id}
-                    onClick={() => setSelectedId(rec._id)}  
-                    className="border-b border-slate-100 hover:bg-indigo-50/40 transition-colors animate-fade-in"
-                    style={{ animationDelay: `${i * 18}ms` }}
-                  >
+                      <tr
+                        key={rec._id}
+                        onClick={() => router.push(`/receipts/${rec._id}`)}
+                        className="border-b border-slate-100 hover:bg-indigo-50/40 transition-colors cursor-pointer"
+                      >
                     <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">
                       {formatDate(rec.dateReceived)}
                     </td>
@@ -279,12 +277,6 @@ export default function ReceiptsPage() {
           </div>
         )}
       </div>
-      {selectedId && (
-        <ReceiptDetailModal
-          receiptId={selectedId}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
     </div>
     
   );

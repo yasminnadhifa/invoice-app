@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { InvoiceListItem } from "@/types";
 import { Badge } from "@/components/Badge";
-import { InvoiceDetailModal } from "@/components/InvoiceModal";
 
 export function formatCurrency(amount: number, currency: string) {
   try {
@@ -237,8 +236,8 @@ export default function InvoicesPage() {
                 {invoices.map((inv, i) => (
                   <tr
                     key={inv._id}
-                    onClick={() => setSelectedId(inv._id)}
-                    className="border-b border-slate-100 hover:bg-indigo-50/40 transition-colors animate-fade-in cursor-pointer"
+                    onClick={() => router.push(`/invoices/${inv._id}`)}
+                    className="border-b border-slate-100 hover:bg-indigo-50/40 transition-colors cursor-pointer"
                     style={{ animationDelay: `${i * 18}ms` }}
                   >
                     {/* Date Received */}
@@ -319,13 +318,6 @@ export default function InvoicesPage() {
         )}
       </div>
 
-      {/* Detail Modal */}
-      {selectedId && (
-        <InvoiceDetailModal
-          invoiceId={selectedId}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
     </div>
   );
 }

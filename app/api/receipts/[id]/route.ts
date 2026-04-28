@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { authenticate } from "@/lib/auth";
 import Receipt from "@/models/Receipt";
 import Attachment from "@/models/Attachment";
+import Invoice from "@/models/Invoice";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -14,14 +15,40 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   try {
     await connectDB();
-    const receipt = await Receipt.findById(id).select("-__v").lean();
+
+    const receipt = await Receipt.findById(id).select("-__v").lean() as any;
     if (!receipt) {
       return NextResponse.json({ message: "receipt not found" }, { status: 404 });
     }
-    const attachments = await Attachment.find({ entityId: id, entityType: "receipt" })
-      .select("-__v -entityType -entityId")
-      .lean();
-    return NextResponse.json({...receipt, attachments});
+    const invoice = receipt.invoiceRef
+      ? await Invoice.findOne({ invoiceNo: receipt.invoiceRef }).select("_id").lean()
+      : null;
+
+    const [receiptAttachments, invoiceAttachments] = await Promise.all([
+      Attachment.find({ entityId: id, entityType: "receipt" })
+        .select("-__v -entityType -entityId")
+        .lean(),
+      invoice
+        ? Attachment.find({ entityId: invoice._id, entityType: "invoice" })
+            .select("-__v -entityType -entityId")
+            .lean()
+        : Promise.resolve([]),
+    ]);
+
+    // Pick converted first, fallback to original
+    const pickPreferred = (atts: any[]) =>
+      atts.find((a) => a.fileType === "converted") ??
+      atts.find((a) => a.fileType === "original") ??
+      null;
+
+    return NextResponse.json({
+      ...receipt,
+      attachments: receiptAttachments,
+      comparisonAttachments: {
+        receipt: pickPreferred(receiptAttachments),
+        invoice: pickPreferred(invoiceAttachments),
+      },
+    });
   } catch {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
