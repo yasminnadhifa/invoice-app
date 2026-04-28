@@ -233,7 +233,7 @@ export default function ReceiptsPage() {
                       {rec.invoiceRef || "—"}
                     </td>
                      <td className="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap">
-                      {rec.grandTotal || "—"}
+                       {formatCurrency(rec.grandTotal, rec.currency)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <Badge value={rec.status || '-'} />   {/* MATCH / FLAGGED */}
