@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       entityType,
       entityId,
       fileType,
-      uploadedBy: auth.payload.userId,
+      uploadedBy: auth.authType === "jwt" ? auth.payload.userId : "system",
     });
 
     return NextResponse.json(attachment, { status: 201 });
