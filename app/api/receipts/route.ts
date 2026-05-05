@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       ...body,
       dateReceived: new Date(body.dateReceived),
       receiptDate: new Date(body.receiptDate),
-      createdBy: auth.payload.userId,
+      createdBy: auth.authType === "jwt" ? auth.payload.userId : "system"
     });
 
     // 4. Update invoice ONLY if valid + matched
