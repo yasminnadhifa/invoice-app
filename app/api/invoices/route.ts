@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       invoiceDate: new Date(body.invoiceDate),
       dueDate: new Date(body.dueDate),
       paidDate: body.paidDate ? new Date(body.paidDate) : undefined,
-      createdBy: auth.authType === "jwt" ? auth.payload.userId : "system", 
+      createdBy: auth.authType === "jwt" ? auth.payload.userId : "69faa99110af68af4b3baf9c", 
     });
 
     return NextResponse.json(invoice.toObject(), { status: 201 });
