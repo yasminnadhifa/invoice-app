@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import { authenticate } from "@/lib/auth";
 import DeliveryOrder from "@/models/DeliveryOrder";
 import Attachment from "@/models/Attachment";
+import RequestLog from "@/models/RequestLog";
 import { CreateDeliveryOrderRequest } from "@/types";
 
 export async function GET(request: NextRequest) {
@@ -48,6 +49,24 @@ export async function GET(request: NextRequest) {
   }
 }
 
+async function logRequest(
+  auth: ReturnType<typeof authenticate>,
+  payload: Record<string, unknown> | undefined,
+  files: { name: string; size: number; mimeType: string }[],
+  responseStatus: number
+) {
+  if ("error" in auth) return;
+  await RequestLog.create({
+    endpoint: "/api/delivery-orders",
+    method: "POST",
+    authType: auth.authType,
+    userId: auth.authType === "jwt" ? auth.payload.userId : undefined,
+    payload,
+    files,
+    responseStatus,
+  }).catch(() => null);
+}
+
 export async function POST(request: NextRequest) {
   const auth = authenticate(request);
   if ("error" in auth) return auth.error;
@@ -59,6 +78,7 @@ export async function POST(request: NextRequest) {
 
     const dataField = formData.get("data");
     if (!dataField || typeof dataField !== "string") {
+      await logRequest(auth, undefined, [], 400);
       return NextResponse.json({ message: "Missing field: data (JSON string)" }, { status: 400 });
     }
 
@@ -66,12 +86,17 @@ export async function POST(request: NextRequest) {
     try {
       body = JSON.parse(dataField);
     } catch {
+      await logRequest(auth, { raw: dataField }, [], 400);
       return NextResponse.json({ message: "Invalid JSON in field: data" }, { status: 400 });
     }
+
+    const files = formData.getAll("files") as File[];
+    const filesInfo = files.map((f) => ({ name: f.name, size: f.size, mimeType: f.type }));
 
     const required = ["docId", "currency", "deliveryDate", "sender", "recipient", "items", "subtotal", "total"] as const;
     const missing = required.filter((f) => !body[f]);
     if (missing.length > 0) {
+      await logRequest(auth, body as unknown as Record<string, unknown>, filesInfo, 400);
       return NextResponse.json(
         { message: "Missing required fields", errors: Object.fromEntries(missing.map((f) => [f, "Required"])) },
         { status: 400 }
@@ -88,7 +113,6 @@ export async function POST(request: NextRequest) {
     });
 
     // Upload any attached files — failures are non-fatal
-    const files = formData.getAll("files") as File[];
     const uploadResults = await Promise.allSettled(
       files.map(async (file) => {
         const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
@@ -113,6 +137,8 @@ export async function POST(request: NextRequest) {
       else uploadErrors.push(String(result.reason));
     }
 
+    await logRequest(auth, body as unknown as Record<string, unknown>, filesInfo, 201);
+
     return NextResponse.json(
       {
         ...order.toObject(),
@@ -122,7 +148,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (err: unknown) {
-    if ((err as { code?: number }).code === 11000) {
+    const status = (err as { code?: number }).code === 11000 ? 409 : 500;
+    await logRequest(auth, undefined, [], status);
+    if (status === 409) {
       return NextResponse.json({ message: "Delivery order ID already exists" }, { status: 409 });
     }
     return NextResponse.json({ message: "Internal server error", errors: String(err) }, { status: 500 });
