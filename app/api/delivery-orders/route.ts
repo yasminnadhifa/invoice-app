@@ -56,20 +56,28 @@ async function logRequest(
   responseStatus: number
 ) {
   if ("error" in auth) return;
-  await RequestLog.create({
-    endpoint: "/api/delivery-orders",
-    method: "POST",
-    authType: auth.authType,
-    userId: auth.authType === "jwt" ? auth.payload.userId : undefined,
-    payload,
-    files,
-    responseStatus,
-  }).catch(() => null);
+  try {
+    await connectDB();
+    await RequestLog.create({
+      endpoint: "/api/delivery-orders",
+      method: "POST",
+      authType: auth.authType,
+      userId: auth.authType === "jwt" ? auth.payload.userId : undefined,
+      payload: payload ? JSON.parse(JSON.stringify(payload)) : undefined,
+      files,
+      responseStatus,
+    });
+  } catch (e) {
+    console.error("[RequestLog] failed to save:", e);
+  }
 }
 
 export async function POST(request: NextRequest) {
   const auth = authenticate(request);
   if ("error" in auth) return auth.error;
+
+  let logPayload: Record<string, unknown> | undefined;
+  let logFiles: { name: string; size: number; mimeType: string }[] = [];
 
   try {
     await connectDB();
@@ -92,6 +100,9 @@ export async function POST(request: NextRequest) {
 
     const files = formData.getAll("files") as File[];
     const filesInfo = files.map((f) => ({ name: f.name, size: f.size, mimeType: f.type }));
+
+    logPayload = body as unknown as Record<string, unknown>;
+    logFiles = filesInfo;
 
     const required = ["docId", "currency", "deliveryDate", "sender", "recipient", "items", "subtotal", "total"] as const;
     const missing = required.filter((f) => !body[f]);
@@ -149,7 +160,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (err: unknown) {
     const status = (err as { code?: number }).code === 11000 ? 409 : 500;
-    await logRequest(auth, undefined, [], status);
+    await logRequest(auth, logPayload, logFiles, status);
     if (status === 409) {
       return NextResponse.json({ message: "Delivery order ID already exists" }, { status: 409 });
     }
